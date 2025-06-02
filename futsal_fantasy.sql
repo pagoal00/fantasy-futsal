@@ -1,5 +1,5 @@
-CREATE DATABASE futsal_fantasy;
-USE futsal_fantasy;
+--CREATE DATABASE futsal_fantasy;
+--USE futsal_fantasy;
 
 CREATE TABLE eventos (
     id INT AUTO_INCREMENT PRIMARY KEY,

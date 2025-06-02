@@ -1,3 +1,4 @@
+import chromium from "chrome-aws-lambda";
 import puppeteer from "puppeteer";
 import db from "../db/connection.js";
 
@@ -144,10 +145,16 @@ export const scrapeTeam = async (req, res) => {
     return res.status(400).json({ message: "La URL es obligatoria." });
   }
 
+  let browser = null;
   try {
-    const browser = await puppeteer.launch();
+    browser = await chromium.puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
-    await page.goto(url);
+    await page.goto(url, { waitUntil: "domcontentloaded" });
 
     const teamName = await page.evaluate(() => {
       const teamElement = document.querySelector("h2.color-main2");
@@ -188,6 +195,7 @@ export const scrapeTeam = async (req, res) => {
     await browser.close();
     res.json({ message: "Datos del equipo extraídos e insertados con éxito." });
   } catch (error) {
+    if (browser) await browser.close();
     res.status(500).json({ message: "Error durante el scraping.", error });
   }
 };
