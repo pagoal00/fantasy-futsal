@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 import chromium from "chrome-aws-lambda";
 import db from "../db/connection.js";
 
