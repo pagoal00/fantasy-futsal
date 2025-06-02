@@ -1,5 +1,5 @@
+import puppeteer from "puppeteer-core";
 import chromium from "chrome-aws-lambda";
-//import puppeteer from "puppeteer";
 import db from "../db/connection.js";
 
 const eventPoints = {
@@ -147,7 +147,7 @@ export const scrapeTeam = async (req, res) => {
 
   let browser = null;
   try {
-    browser = await chromium.puppeteer.launch({
+    browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath,
