@@ -195,7 +195,8 @@ export const scrapeTeam = async (req, res) => {
     await browser.close();
     res.json({ message: "Datos del equipo extraídos e insertados con éxito." });
   } catch (error) {
+    console.error("Error durante el scraping:", error);
     if (browser) await browser.close();
-    res.status(500).json({ message: "Error durante el scraping.", error });
+    res.status(500).json({ message: "Error durante el scraping.", error: error.toString() });
   }
 };
