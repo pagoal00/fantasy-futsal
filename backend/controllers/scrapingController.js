@@ -152,8 +152,8 @@ export const scrapeTeam = async (req, res) => {
     console.log("📦 Iniciando navegador sin cabeza (headless)...");
     browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath || "/usr/bin/chromium-browser",
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath, // 👈 sin fallback
+      headless: true,
       defaultViewport: chromium.defaultViewport,
     });
 
