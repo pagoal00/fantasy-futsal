@@ -147,14 +147,18 @@ export const scrapeTeam = async (req, res) => {
 
   let browser = null;
   try {
+    console.log("Iniciando navegador...");
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: (await chromium.executablePath) || '/usr/bin/chromium-browser',
       headless: chromium.headless,
     });
+    console.log("Navegador lanzado.");
     const page = await browser.newPage();
+    console.log("Página abierta.");
     await page.goto(url, { waitUntil: "domcontentloaded" });
+    console.log("Página cargada.");
 
     const teamName = await page.evaluate(() => {
       const teamElement = document.querySelector("h2.color-main2");
