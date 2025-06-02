@@ -139,6 +139,7 @@ async function actualizarQuintetos(jornada) {
   }
 }
 
+
 export const scrapeTeam = async (req, res) => {
   const { url } = req.body;
   if (!url) {
@@ -146,24 +147,22 @@ export const scrapeTeam = async (req, res) => {
   }
 
   let browser = null;
+
   try {
-    console.log("Iniciando navegador...");
+    console.log("📦 Iniciando navegador sin cabeza (headless)...");
     browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: (await chromium.executablePath) || '/usr/bin/chromium-browser',
+      executablePath: await chromium.executablePath || "/usr/bin/chromium-browser",
       headless: chromium.headless,
+      defaultViewport: chromium.defaultViewport,
     });
-    console.log("Navegador lanzado.");
+
     const page = await browser.newPage();
-    console.log("Página abierta.");
     await page.goto(url, { waitUntil: "domcontentloaded" });
-    console.log("Página cargada.");
 
     const teamName = await page.evaluate(() => {
-      const teamElement = document.querySelector("h2.color-main2");
-      const fullTeamName = teamElement ? teamElement.innerText.trim() : null;
-      return fullTeamName ? fullTeamName.replace(/^PLANTILLA\s/, "") : null;
+      const el = document.querySelector("h2.color-main2");
+      return el?.innerText?.replace(/^PLANTILLA\s*/, "").trim() || null;
     });
 
     const players = await page.evaluate(() => {
@@ -172,35 +171,36 @@ export const scrapeTeam = async (req, res) => {
 
       rows.forEach((row) => {
         const dorsal = row.querySelector("td.color-white")?.innerText.trim();
-        const playerName = row.querySelector(".name p.bold")?.innerText.trim();
-        const nicknameElement = row.querySelector(".name p:nth-child(2)")?.innerText.trim();
-        const position = row.querySelector("td.bold")?.innerText.trim();
+        const name = row.querySelector(".name p.bold")?.innerText.trim();
+        const alias = row.querySelector(".name p:nth-child(2)")?.innerText.trim();
+        const pos = row.querySelector("td.bold")?.innerText.trim();
         const status = row.querySelector(".mini-label")?.innerText.trim();
-        const imageUrl = row.querySelector("td.ph5.img img")?.getAttribute("src") || null;
+        const image = row.querySelector("td.ph5.img img")?.getAttribute("src") || null;
 
-        if (dorsal && playerName && status !== "Dejó el equipo") {
-          const nickname = nicknameElement !== playerName ? nicknameElement : "";
-          data.push({ dorsal, playerName, nickname, position, imageUrl });
+        if (dorsal && name && pos && status !== "Dejó el equipo") {
+          const nickname = alias !== name ? alias : "";
+          data.push({ dorsal, name, nickname, pos, image });
         }
       });
+
       return data;
     });
 
-    
-    for (const player of players) {
-      const { dorsal, playerName, nickname, position, imageUrl } = player;
-      const basePrice = prieceBaseByPosition[position] || 5.00;
+    for (const { dorsal, name, nickname, pos, image } of players) {
+      const basePrice = prieceBaseByPosition[pos] || 5.00;
       await db.execute(
         "INSERT INTO jugadores (dorsal, nombre, alias, posicion, equipo, precio, imagen) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [dorsal, playerName, nickname, position, teamName, basePrice, imageUrl]
+        [dorsal, name, nickname, pos, teamName, basePrice, image]
       );
     }
 
     await browser.close();
-    res.json({ message: "Datos del equipo extraídos e insertados con éxito." });
+    res.json({ message: "✅ Datos del equipo insertados con éxito." });
+
   } catch (error) {
-    console.error("Error durante el scraping:", error);
+    console.error("❌ Error durante el scraping:", error);
     if (browser) await browser.close();
-    res.status(500).json({ message: "Error durante el scraping.", error: error.toString() });
+    res.status(500).json({ message: "Error durante el scraping.", error: error.message });
   }
 };
+
