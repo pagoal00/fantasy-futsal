@@ -150,7 +150,7 @@ export const scrapeTeam = async (req, res) => {
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
+      executablePath: (await chromium.executablePath) || '/usr/bin/chromium-browser',
       headless: chromium.headless,
     });
     const page = await browser.newPage();
