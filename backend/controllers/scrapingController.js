@@ -1,5 +1,5 @@
 import chromium from "chrome-aws-lambda";
-import puppeteer from "puppeteer";
+//import puppeteer from "puppeteer";
 import db from "../db/connection.js";
 
 const eventPoints = {
