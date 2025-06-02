@@ -1,0 +1,73 @@
+header img{
+  height: 200px;
+}
+header h1{
+  margin-top: 1px;
+  color: #213D3A;
+}
+
+form {
+  background-color: #347C78;
+  margin-top: -70px;
+  padding: 32px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: white;
+}
+
+form input {
+  width: 93%;
+  padding: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+form button {
+  width: 200px;
+  margin: 0 auto;
+  display: block;
+  padding: 12px;
+  background-color: #D16A2C;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover{
+  background-color: #213D3A;
+  color: #D16A2C;
+}
+
+form p {
+  text-align: center;
+  margin-top: 20px; 
+  font-size: 14px;
+  color: white;
+}
+
+form p a {
+  color: #D16A2C;
+  text-decoration: none;
+}
+
+form p a:hover {
+  text-decoration: underline;
+}
+
+footer{
+  margin-top: 100px;
+}

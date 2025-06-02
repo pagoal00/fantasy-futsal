@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Cambiar email</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="cambiarEmail.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+      <h1>Cambiar correo electrónico</h1>
+
+      <form id="changeEmailForm">
+        <label for="newEmail">Nuevo correo:</label>
+        <input type="email" id="newEmail" name="newEmail" required>
+        <button type="submit">Actualizar</button>
+      </form>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const token = localStorage.getItem("token");
+
+          if (!token) {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            window.location.href = "/index.html";
+          } else {
+            setTimeout(() => {
+              alert(
+                "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+              );
+              localStorage.removeItem("token");
+              window.location.href = "/index.html";
+            }, 10 * 60 * 1000);
+          }
+        });
+        
+        document.getElementById("changeEmailForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const token = localStorage.getItem("token");
+          const newEmail = document.getElementById("newEmail").value;
+
+          try {
+            const response = await fetch("/api/cambiar-email", {
+              method: "POST",
+              headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ email: newEmail })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+
+            if (response.ok) {
+              alert("Correo actualizado correctamente.");
+              window.location.href = "mas.html";
+            }
+
+          } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo actualizar el correo.");
+          }
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "index.html";
+        });
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

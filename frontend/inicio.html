@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Inicio</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="inicio.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body class="inicio">
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main class="inicio-layout">
+      <div class="inicio-logo">
+        <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal Logo" />
+      </div>
+      <div class="inicio-contenido">
+        <h1>Bienvenido a Fantasy Futsal</h1>
+        <p>¡Gestiona tu equipo y compite con otros jugadores!</p>
+        
+    
+        <div class="league-select">
+          <label for="leagueSelector">Selecciona una liga:</label>
+          <select id="leagueSelector">
+            <option value="">-- Selecciona una liga --</option>
+          </select>
+        </div>
+
+        <button onclick="window.location.href='liga.html'">Unirse/Crear Liga</button>
+      </div>
+
+
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+            window.location.href = "/index.html";
+            return;
+          }
+          setTimeout(() => {
+            alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+            localStorage.removeItem("token");
+            window.location.href = "/index.html";
+          }, 10 * 60 * 1000);
+    
+          async function loadUserLeagues() {
+            try {
+              const response = await fetch("/api/userLigas", {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const leagues = await response.json();
+              const selector = document.getElementById("leagueSelector");
+              selector.innerHTML = '<option value="">-- Selecciona una liga --</option>';
+              leagues.forEach(league => {
+                const option = document.createElement("option");
+                option.value = league.id;
+                option.textContent = league.nombre;
+                selector.appendChild(option);
+              });
+              
+              const selectedLeague = localStorage.getItem("selectedLeague");
+              if (selectedLeague) {
+                selector.value = selectedLeague;
+              }
+            } catch (error) {
+              console.error("Error cargando ligas:", error);
+            }
+          }
+    
+          
+          document.getElementById("leagueSelector").addEventListener("change", (e) => {
+            const selectedLeague = e.target.value;
+            localStorage.setItem("selectedLeague", selectedLeague);
+          });
+    
+          loadUserLeagues();
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "index.html"; 
+        });
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

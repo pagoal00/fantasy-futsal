@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Clasificación</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="clasificacion.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+      <h1>Clasificación</h1>
+      <i class="fas fa-trophy"></i>
+
+      <div id="presupuestoContainer">
+        <p>Presupuesto: <span id="presupuestoValor"></span>M €</p>
+      </div>
+
+      <div class="dropdown-container">
+        <label for="jornadaSelector">Selecciona la Jornada:</label>
+        <select id="jornadaSelector">
+          <option value="1">Jornada 1</option>
+          <option value="2">Jornada 2</option>
+          <option value="3">Jornada 3</option>
+          <option value="4">Jornada 4</option>
+          <option value="5">Jornada 5</option>
+      
+        </select>
+      </div>
+      
+      <div class="table-container">
+        <table id="clasificacionTable">
+          <thead>
+            <tr>
+              <th>Equipo</th>
+              <th>Total Puntos</th>
+              <th>Puntos Jornada</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+          </tbody>
+        </table>
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            window.location.href = "/index.html";
+          } else {
+            setTimeout(() => {
+              alert(
+                "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+              );
+              localStorage.removeItem("token");
+              window.location.href = "/index.html";
+            }, 10 * 60 * 1000);
+          }
+
+          
+          const selectedLeague = localStorage.getItem("selectedLeague");
+          if (!selectedLeague) {
+            alert("Por favor, selecciona una liga desde la página de inicio.");
+            window.location.href = "/inicio.html";
+            return;
+          }
+          
+          async function loadClasificacion() {
+            const jornada = document.getElementById("jornadaSelector").value;
+            try { 
+              const response = await fetch(`/api/clasificacion/${selectedLeague}/${jornada}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const clasificacion = await response.json();
+              const tableBody = document.querySelector("#clasificacionTable tbody");
+              tableBody.innerHTML = "";
+              clasificacion.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                  <td>${item.equipo}</td>
+                  <td>${item.total_puntos}</td>
+                  <td>${item.puntos_jornada}</td>
+                `;
+                tableBody.appendChild(row);
+              });
+            } catch (error) {
+              console.error("Error cargando clasificación:", error);
+            }
+          }
+
+          async function loadPresupuesto() {
+            try {
+              const response = await fetch(`/api/presupuesto/${selectedLeague}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const data = await response.json();
+              console.log("Respuesta completa de presupuesto:", data);
+              if (data.presupuesto !== undefined) {
+                const presupuesto = parseFloat(data.presupuesto);
+                document.getElementById("presupuestoValor").textContent = presupuesto.toFixed(2);
+              } else {
+                document.getElementById("presupuestoValor").textContent = "No disponible";
+              }
+            } catch (error) {
+              console.error("Error cargando presupuesto:", error);
+            }
+          }
+          
+          loadClasificacion();
+          loadPresupuesto();
+          document.getElementById("jornadaSelector").addEventListener("change", loadClasificacion);
+      
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "index.html"; 
+        });
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

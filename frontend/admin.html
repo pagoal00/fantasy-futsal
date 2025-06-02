@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Admin</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li><a href="admin.html">Admin</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <div class="admin-section">
+        <h2>Esta es la sección de administración del sistema.</h2>
+      </div>
+      <form id="scrapeForm">
+        <label for="scrapeUrl">Ingresa la URL del partido:</label>
+        <input
+          type="text"
+          id="scrapeUrl"
+          placeholder="https://www.lnfs.es/partido/..."
+          required
+        />
+        <button type="submit">Extraer eventos</button>
+      </form>
+      <div id="scrapeMessage"></div>
+
+      <form id="teamScrapeForm">
+        <label for="teamScrapeUrl">Ingresa la URL del equipo:</label>
+        <input
+          type="text"
+          id="teamScrapeUrl"
+          placeholder="https://www.lnfs.es/equipo/..."
+          required
+        />
+        <button type="submit">Extraer jugadores</button>
+      </form>
+      <div id="teamScrapeMessage"></div>
+
+      <button id="refreshAllBtn">Recargar Todo</button>
+
+      <div class="table-container">
+        <h2>Información de Equipos</h2>
+        <button onclick="refreshTeams()">Recargar Equipos</button>
+        <table class="admin-table" id="teamsTable">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Nombre</th>
+              <th>Estadio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-container">
+        <h2>Información de Jugadores</h2>
+        <button onclick="refreshPlayers()">Recargar Jugadores</button>
+        <table class="admin-table" id="playersTable">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Imagen</th>
+              <th>Dorsal</th>
+              <th>Nombre</th>
+              <th>Alias</th>
+              <th>Posicion</th>
+              <th>Equipo</th>
+              <th>Puntos</th>
+              <th>Precio</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-container">
+        <h2>Información de Eventos</h2>
+        <button onclick="refreshEvents()">Recargar Eventos</button>
+        <table class="admin-table" id="eventsTable">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Jornada</th>
+              <th>Jugador</th>
+              <th>Equipo</th>
+              <th>Posicion</th>
+              <th>Dorsal</th>
+              <th>Evento</th>
+              <th>Minuto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-container">
+        <h2>Puntos por Jornada</h2>
+        <button onclick="refreshPoints()">Recargar Puntos</button>
+        <table class="admin-table" id="pointsTable">
+          <thead>
+            <tr>
+              <th>Jornada</th>
+              <th>Jugador</th>
+              <th>Equipo</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filas generadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+      
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const token = localStorage.getItem("token");
+
+          if (!token) {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            window.location.href = "/index.html";
+          } 
+
+          //validación de admin
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          if (!payload.is_admin) {
+            alert("Acceso denegado. No tienes permisos de administrador.");
+            window.location.href = "/inicio.html"; 
+            return;
+          }
+            
+          setTimeout(() => {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            localStorage.removeItem("token");
+            window.location.href = "/index.html";
+          }, 10 * 60 * 1000);
+        });
+
+        document.getElementById("scrapeForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const scrapeUrl = document.getElementById("scrapeUrl").value;
+
+          try {
+            const response = await fetch("/api/scrape", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: scrapeUrl }),
+            });
+
+            const result = await response.json();
+            document.getElementById("scrapeMessage").innerText = result.message;
+          } catch (error) {
+            document.getElementById("scrapeMessage").innerText = "Error al realizar el scraping.";
+            console.error(error);
+          }
+          e.target.reset(); 
+        });
+
+        document.getElementById("teamScrapeForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const teamScrapeUrl = document.getElementById("teamScrapeUrl").value;
+
+          try {
+            const response = await fetch("/api/scrape-team", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: teamScrapeUrl }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Error en la solicitud al servidor.");
+            }
+
+            const result = await response.json();
+            document.getElementById("teamScrapeMessage").innerText = result.message || "Operación completada.";
+          } catch (error) {
+            document.getElementById("teamScrapeMessage").innerText = "Error al realizar el scraping.";
+            console.error(error);
+          }
+          e.target.reset();
+        });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+          try {
+            
+            const teamsResponse = await fetch("/api/teams");
+            const teams = await teamsResponse.json();
+            const teamsTable = document.getElementById("teamsTable").querySelector("tbody");
+
+            teams.forEach((team) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${team.id}</td>
+                <td>${team.nombre}</td>
+                <td>${team.estadio}</td>
+              `;
+              teamsTable.appendChild(row);
+            });
+
+            
+            const playersResponse = await fetch("/api/players");
+            const players = await playersResponse.json();
+            const playersTable = document.getElementById("playersTable").querySelector("tbody");
+
+            players.forEach((player) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${player.id}</td>
+                <td><img src="${player.imagen}" alt="Imagen de ${player.nombre}" style="width:100px; height:auto;"></td>
+                <td>${player.dorsal}</td>
+                <td>${player.nombre}</td>
+                <td>${player.alias}</td>
+                <td>${player.posicion}</td>
+                <td>${player.equipo}</td>
+                <td>${player.puntos}</td>
+                <td>${player.precio}</td>
+                
+              `;
+              playersTable.appendChild(row);
+            });
+
+            
+            const eventsResponse = await fetch("/api/events");
+            const events = await eventsResponse.json();
+            const eventsTable = document.getElementById("eventsTable").querySelector("tbody");
+
+            events.forEach((event) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${event.id}</td>
+                <td>${event.jornada}</td>
+                <td>${event.name}</td>
+                <td>${event.team}</td>
+                <td>${event.position}</td>
+                <td>${event.dorsal}</td>
+                <td>${event.event_type}</td>
+                <td>${event.event_minute}</td>
+              `;
+              eventsTable.appendChild(row);
+            });
+          } catch (error) {
+            console.error("Error al cargar datos:", error);
+          }
+        });
+
+        // Fetch datos de puntos por jornada
+        document.addEventListener("DOMContentLoaded", async () => {
+          try {
+            const pointsResponse = await fetch("/api/points");
+            const points = await pointsResponse.json();
+            const pointsTable = document.getElementById("pointsTable").querySelector("tbody");
+
+            points.forEach((point) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${point.jornada}</td>
+                <td>${point.jugador}</td>
+                <td>${point.equipo}</td>
+                <td>${point.puntos}</td>
+              `;
+              pointsTable.appendChild(row);
+            });
+          } catch (error) {
+            console.error("Error al cargar puntos por jornada:", error);
+          }
+        });
+
+
+        document.getElementById("refreshAllBtn").addEventListener("click", refreshAllTables);
+
+        async function refreshAllTables() {
+          try {
+            await refreshPlayers();
+            await refreshEvents();
+            await refreshPoints();
+            console.log("Tablas actualizadas correctamente.");
+          } catch (error) {
+            console.error("Error al refrescar las tablas:", error);
+          }
+        }
+
+
+
+
+        async function refreshTeams() {
+          try {
+            const response = await fetch("/api/teams");
+            const teams = await response.json();
+            const teamsTable = document.querySelector("#teamsTable tbody");
+            teamsTable.innerHTML = ""; 
+            teams.forEach((team) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${team.id}</td>
+                <td>${team.nombre}</td>
+                <td>${team.estadio}</td>
+              `;
+              teamsTable.appendChild(row);
+            });
+          } catch (error) {
+            console.error("Error al refrescar equipos:", error);
+          }
+        }
+
+        async function refreshPlayers() {
+          try {
+            const response = await fetch("/api/players");
+            const players = await response.json();
+            const playersTable = document.querySelector("#playersTable tbody");
+            playersTable.innerHTML = ""; 
+            players.forEach((player) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${player.id}</td>
+                <td><img src="${player.imagen}" alt="Imagen de ${player.nombre}" style="width:100px; height:auto;"></td>
+                <td>${player.dorsal}</td>
+                <td>${player.nombre}</td>
+                <td>${player.alias}</td>
+                <td>${player.posicion}</td>
+                <td>${player.equipo}</td>
+                <td>${player.puntos}</td>
+                <td>${player.precio}</td>
+              `;
+              playersTable.appendChild(row);
+            });
+          } catch (error) {
+            console.error("Error al refrescar jugadores:", error);
+          }
+        }
+
+        async function refreshEvents() {
+          try {
+            const response = await fetch("/api/events");
+            const events = await response.json();
+            const eventsTable = document.querySelector("#eventsTable tbody");
+            eventsTable.innerHTML = ""; 
+            events.forEach((event) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${event.id}</td>
+                <td>${event.jornada}</td>
+                <td>${event.name}</td>
+                <td>${event.team}</td>
+                <td>${event.position}</td>
+                <td>${event.dorsal}</td>
+                <td>${event.event_type}</td>
+                <td>${event.event_minute}</td>
+              `;
+              eventsTable.appendChild(row);
+            });
+          } catch (error) {
+            console.error("Error al refrescar eventos:", error);
+          }
+        }
+
+        async function refreshPoints() {
+          try {
+            const response = await fetch("/api/points");
+            const points = await response.json();
+            const pointsTable = document.querySelector("#pointsTable tbody");
+
+            pointsTable.innerHTML = "";
+            points.forEach((point) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${point.jornada}</td>
+                <td>${point.jugador}</td>
+                <td>${point.equipo}</td>
+                <td>${point.puntos}</td>
+              `;
+              pointsTable.appendChild(row);
+            });
+
+            console.log("Puntos actualizados");
+          } catch (error) {
+            console.error("Error al refrescar puntos:", error);
+          }
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "index.html"; 
+        });
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

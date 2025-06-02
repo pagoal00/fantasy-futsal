@@ -1,0 +1,50 @@
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+}
+
+main img {
+  height: 100px;
+  margin-top: -30px;
+}
+
+main p {
+  font-size: 20px;
+  color: #213D3A;
+  text-align: center;
+  max-width: 500px;
+  margin-bottom: 24px;
+}
+
+main label {
+  margin-top: 16px;
+  font-weight: bold;
+  color: #213D3A;
+}
+
+main input[type="password"] {
+  width: 300px;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 24px;
+}
+
+#confirmDelete {
+  background-color: #B15521; 
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#confirmDelete:hover {
+  background-color: red; 
+}

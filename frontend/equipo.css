@@ -1,0 +1,303 @@
+.container-equipo{
+  text-align: center;
+  margin-top: -30px;
+}
+.container-equipo img{
+  height: 100px;
+}
+.container-equipo button{
+  display: block;
+  width: 300px;
+  margin: 15px auto;
+  padding: 10px 30px;
+  font-size: 16px;
+  background-color: #213D3A;
+  color: #F1E7D3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.container-equipo button:hover{
+  color: #F1E7D3;
+  background-color: #D16A2C;
+}
+
+.container-equipo h1 {
+  font-size: 40px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: #213D3A;
+  font-weight: bold;
+}
+
+.table-container-equipo {
+  max-height: 650px; 
+  overflow-y: auto; 
+  margin: 16px 0; 
+  border-radius: 8px; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+  background-color: white;
+  text-align: center;
+  overflow-x: auto;
+}
+  
+.table-container-equipo button {
+  display: block;
+  width: 200px;
+  margin: 15px auto;
+  padding: 10px 30px;
+  font-size: 16px;
+  background-color: #D16A2C;
+  color: #F1E7D3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.table-container-equipo button:hover {
+  background-color: #F1E7D3;
+  color: #D16A2C;
+}
+
+.table-container-equipo table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container-equipo th,
+.table-container-equipo td {
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+.table-container-equipo td .jugador-img {
+  width: 100px;
+  height: auto;
+  border-radius: 15px;
+}
+
+.table-container-equipo th {
+  background-color: #D16A2C;
+}
+
+.table-container-equipo tr:nth-child(even) {
+  background-color: #347C78;
+}
+
+.table-container-equipo tr:nth-child(odd) {
+  background-color: #213D3A;
+}
+
+.table-container-equipo::-webkit-scrollbar {
+  width: 15px; 
+}
+
+.table-container-equipo::-webkit-scrollbar-track {
+  background: #F1E7D3; 
+  border-radius: 8px;
+}
+
+.table-container-equipo::-webkit-scrollbar-thumb {
+  background-color: #D16A2C; 
+  border-radius: 5px;
+}
+
+.table-container-equipo::-webkit-scrollbar-thumb:hover {
+  background-color: #213D3A; 
+}
+
+.quintetoCheckbox {
+  transform: scale(2);
+  cursor: pointer;
+}
+
+#quinteto-guardado {
+  margin-top: 50px;
+  text-align: center;
+}
+
+#quinteto-guardado h3 {
+  font-size: 28px;
+  color: #213D3A;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.dropdown-container {
+  margin-bottom: 20px;
+}
+
+.dropdown-container label {
+  font-size: 18px;
+  color: #213D3A;
+  margin-right: 10px;
+}
+
+#quinteto-jornada-selector {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#ver-quinteto-btn {
+  padding: 8px 16px;
+  background-color: #D16A2C;
+  color: #F1E7D3;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 10px;
+  margin-top: 5px;
+}
+
+#ver-quinteto-btn:hover {
+  background-color: #F1E7D3;
+  color: #D16A2C;
+}
+
+.quinteto-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.quinteto-card {
+  background-color:#347C78;
+  border-radius: 8px;
+  width: 150px;
+  text-align: center;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.quinteto-card img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.quinteto-card .jugador-nombre {
+  font-weight: bold;
+  margin-top: 10px;
+  color:#F1E7D3;
+}
+
+.quinteto-card .jugador-posicion {
+  color: #D16A2C;
+  margin-top: 5px;
+}
+
+.quinteto-card .jugador-puntos {
+  margin-top: 10px;
+  font-size: 14px;
+  color:#F1E7D3;
+}
+
+#total-puntos-container {
+  margin-top: 20px;
+  font-size: 20px;
+  color: #213D3A;
+}
+
+#presupuestoContainer {
+  background-color: #f1e7d3;
+  color: #213d3a;
+  font-weight: bold;
+  padding: 10px 20px;
+  margin: 10px auto;
+  border-radius: 8px;
+  width: fit-content;
+  text-align: center;
+}
+
+@media (max-width: 1000px) {
+  .table-container-equipo table {
+    font-size: 14px;
+  }
+
+  .table-container-equipo th,
+  .table-container-equipo td {
+    padding: 8px;
+  }
+
+  .table-container-equipo td img {
+    width: 70px;
+  }
+
+  .container-equipo h1 {
+    font-size: 30px;
+  }
+
+  .container-equipo button {
+    width: 80%;
+    font-size: 15px;
+    padding: 8px 20px;
+  }
+}
+
+@media (max-width: 750px) {
+  .table-container-equipo table {
+    font-size: 14px;
+  }
+
+  .table-container-equipo td img {
+    width: 60px;
+  } 
+}
+
+@media (max-width: 650px) {
+  .table-container-equipo table {
+    font-size: 12px;
+    width: 300px;
+  }
+
+  .container-equipo button,
+  .table-container-equipo button {
+    width: 100px;
+    font-size: 12px;
+    padding: 2px 3px;
+  }
+  .table-container-equipo td .jugador-img {
+    width: 70px;
+    height: auto;
+    border-radius: 15px;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .table-container-equipo table {
+    font-size: 11px;
+  }
+
+  .table-container-equipo th,
+  .table-container-equipo td {
+    padding: 2px 3px;
+  }
+
+  .container-equipo h1 {
+    font-size: 26px;
+  }
+
+  .container-equipo button,
+  .table-container-equipo button {
+    width: 100px;
+    font-size: 12px;
+    padding: 2px 3px;
+  }
+
+    .table-container-equipo td .jugador-img {
+    width: 50px;
+    height: auto;
+    border-radius: 15px;
+  }
+}
+
+

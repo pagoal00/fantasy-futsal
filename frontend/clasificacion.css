@@ -1,0 +1,98 @@
+main {
+  text-align: center;
+  margin-top: 40px;
+}
+
+main h1 {
+  font-size: 40px;
+  color: #213D3A;
+  
+  font-weight: bold;
+}
+
+main img{
+  height: 100px;
+  margin-top: -60px;
+}
+
+.dropdown-container {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.dropdown-container label {
+  font-size: 18px;
+  color: #213D3A;
+  margin-right: 10px;
+}
+
+#jornadaSelector {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.table-container {
+  max-width: 800px;
+  margin: 0 auto;
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+#clasificacionTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#clasificacionTable th,
+#clasificacionTable td {
+  padding: 12px;
+  text-align: center;
+  color: #F1E7D3;
+}
+
+#clasificacionTable th {
+  background-color: #D16A2C;
+  color: #F1E7D3;
+}
+
+#clasificacionTable tr:nth-child(even) {
+  background-color: #347C78;
+}
+
+#clasificacionTable tr:nth-child(odd) {
+  background-color: #213D3A;
+  color: #F1E7D3;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #F1E7D3;
+  border-radius: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background-color: #D16A2C;
+  border-radius: 5px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #213D3A;
+}
+
+#presupuestoContainer {
+  background-color: #f1e7d3;
+  color: #213d3a;
+  font-weight: bold;
+  padding: 10px 20px;
+  margin: 10px auto;
+  border-radius: 8px;
+  width: fit-content;
+  text-align: center;
+}

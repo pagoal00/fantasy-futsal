@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Equipo</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="equipo.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <div class="container-equipo">
+        <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+        <h1>Mi Equipo</h1>
+        <i class="fas fa-shield-alt"></i>
+
+        <div id="presupuestoContainer">
+          <p>Presupuesto: <span id="presupuestoValor"></span>M €</p>
+        </div>
+
+        <div class="table-container-equipo">
+          <table id="teamTable">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Jugador</th>
+                <th>Posición</th>
+                <th>Precio de compra</th>
+                <th>Quinteto Inicial</th>
+                <th>Venta directa</th>
+                <th>Poner en Mercado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Se llenará dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+        <button id="saveQuintetoBtn">Guardar Quinteto Inicial</button>
+      </div>
+      
+      <section id="quinteto-guardado">
+        <h3>Ver Quintetos Guardados</h3>
+        <div class="dropdown-container">
+          <label for="quinteto-jornada-selector">Seleccionar Jornada:</label>
+          <select id="quinteto-jornada-selector"></select>
+          <button id="ver-quinteto-btn">Ver Quinteto</button>
+        </div>
+        <div id="quinteto-cards" class="quinteto-cards-container">
+  
+        </div>
+        <div id="total-puntos-container">
+          <strong>Total Puntos del Quinteto: </strong>
+          <span id="total-quinteto-puntos">0</span>
+        </div>
+      </section>
+      
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+          window.location.href = "/index.html";
+          return;
+        }
+        const selectedLeague = localStorage.getItem("selectedLeague");
+        if (!selectedLeague) {
+          alert("Por favor, selecciona una liga desde la página de inicio.");
+          window.location.href = "/inicio.html";
+          return;
+        }
+        setTimeout(() => {
+          alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+          localStorage.removeItem("token");
+          window.location.href = "/index.html";
+        }, 10 * 60 * 1000);
+  
+        function obtenerUsuarioID() {
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return payload.id;
+          } catch (error) {
+            console.error("Error decodificando token:", error);
+            return null;
+          }
+        }
+  
+        function cargarOpcionesJornadas() {
+          const select = document.getElementById("quinteto-jornada-selector");
+          select.innerHTML = "";
+          for (let i = 1; i <= 30; i++) {
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = `Jornada ${i}`;
+            select.appendChild(option);
+          }
+        }
+  
+        async function loadTeam() {
+          try {
+            const response = await fetch(`/api/equipo/${selectedLeague}`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            const team = await response.json();
+            const tableBody = document.querySelector("#teamTable tbody");
+            tableBody.innerHTML = "";
+            team.forEach(item => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td><img class="jugador-img" src="${item.imagen}" alt="Imagen de ${item.jugador_nombre}"></td>
+                <td>${item.jugador_nombre}</td>
+                <td>${item.posicion}</td>
+                <td>${item.precio_compra}</td>
+                <td><input type="checkbox" class="quintetoCheckbox" data-id="${item.jugador_id}"></td>
+                <td><button class="venderDirectoBtn" data-id="${item.jugador_id}">Vender Directo</button></td>
+                <td>
+                  ${
+                    item.en_mercado 
+                    ? `<button class="quitarMercadoBtn" data-id="${item.jugador_id}">Quitar del Mercado</button>` 
+                    : `<button class="venderMercadoBtn" data-id="${item.jugador_id}">Poner en Mercado</button>`
+                  }
+                </td>
+              `;
+              tableBody.appendChild(row);
+            });
+          
+            const checkboxes = document.querySelectorAll(".quintetoCheckbox");
+            checkboxes.forEach(cb => {
+              cb.addEventListener("change", () => {
+                const selected = document.querySelectorAll(".quintetoCheckbox:checked");
+                if (selected.length > 5) {
+                  cb.checked = false;
+                  alert("Solo puedes seleccionar 5 jugadores para el quinteto inicial.");
+                }
+              });
+            });
+
+            const btnVenderDirecto = document.querySelectorAll(".venderDirectoBtn");
+            btnVenderDirecto.forEach(btn => {
+              btn.addEventListener("click", () => {
+                const jugador_id = btn.getAttribute("data-id");
+                venderDirecto(jugador_id);
+              });
+            });
+
+            const btnVenderMercado = document.querySelectorAll(".venderMercadoBtn");
+            btnVenderMercado.forEach(btn => {
+              btn.addEventListener("click", () => {
+                const jugador_id = btn.getAttribute("data-id");
+                venderMercado(jugador_id);
+              });
+            });
+
+            const btnQuitarMercado = document.querySelectorAll(".quitarMercadoBtn");
+            btnQuitarMercado.forEach(btn => {
+              btn.addEventListener("click", () => {
+                const jugador_id = btn.getAttribute("data-id");
+                quitarDelMercado(jugador_id);
+              });
+            });
+
+          } catch (error) {
+            console.error("Error cargando el equipo:", error);
+          }
+        }
+
+
+        async function venderDirecto(jugador_id) {
+          if (!confirm("¿Estás seguro de vender este jugador directamente?")) return;
+          try {
+            const response = await fetch(`/api/equipo/venderDirecto`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                liga_id: selectedLeague,
+                jugador_id: jugador_id
+              })
+            });
+            const data = await response.json();
+            alert(data.message);
+            loadTeam();
+            loadPresupuesto();
+          } catch (error) {
+            console.error("Error al vender directamente:", error);
+            alert("Error al vender el jugador directamente.");
+          }
+        }
+
+  
+        async function venderMercado(jugador_id) {
+          const precioInput = prompt("Ingrese el precio para poner este jugador en el mercado:");
+          const precio = parseFloat(precioInput);
+          if (isNaN(precio)) {
+            alert("Precio inválido.");
+            return;
+          }
+          try {
+            const response = await fetch(`/api/equipo/venderMercado`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                liga_id: selectedLeague,
+                jugador_id: jugador_id,
+                precio: precio
+              })
+            });
+            const data = await response.json();
+            if (data.exists) {
+              const confirmar = confirm(data.message);
+              if (confirmar) {
+                const updateResponse = await fetch(`/api/equipo/venderMercado`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                    liga_id: selectedLeague,
+                    jugador_id: jugador_id,
+                    precio: precio,
+                    actualizar: true
+                  })
+                });
+                const updateData = await updateResponse.json();
+                alert(updateData.message);
+              } else {
+                alert("No se actualizó la oferta.");
+              }
+            } else {
+              alert(data.message);
+            }
+            loadTeam();
+          } catch (error) {
+            console.error("Error al poner el jugador en el mercado:", error);
+            alert("Error al poner el jugador en el mercado.");
+          }
+        }
+
+
+        async function quitarDelMercado(jugador_id) {
+          if (!confirm("¿Estás seguro de quitar este jugador del mercado?")) return;
+          try {
+            const response = await fetch(`/api/equipo/quitarMercado`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                liga_id: selectedLeague,
+                jugador_id: jugador_id
+              })
+            });
+            const data = await response.json();
+            alert(data.message);
+            loadTeam();
+          } catch (error) {
+            console.error("Error al quitar jugador del mercado:", error);
+            alert("Error al quitar el jugador del mercado.");
+          }
+        }
+
+  
+        async function saveQuinteto() {
+          const selectedCheckboxes = document.querySelectorAll(".quintetoCheckbox:checked");
+          if (selectedCheckboxes.length !== 5) {
+            alert("Debes seleccionar exactamente 5 jugadores para el quinteto inicial.");
+            return;
+          }
+
+          const posiciones = [];
+          selectedCheckboxes.forEach(cb => {
+            const row = cb.closest("tr");
+            const posicion = row.querySelector("td:nth-child(3)").innerText;
+            posiciones.push(posicion);
+          });
+
+          const counts = {
+            Portero: posiciones.filter(p => p === "Portero").length,
+            Cierre: posiciones.filter(p => p === "Cierre").length,
+            Ala: posiciones.filter(p => p === "Ala").length,
+            Pívot: posiciones.filter(p => p === "Pívot").length,
+          };
+
+          if (counts.Portero !== 1 || counts.Cierre !== 1 || counts.Ala !== 2 || counts.Pívot !== 1) {
+            alert(`Debes seleccionar:
+            - 1 Portero
+            - 1 Cierre
+            - 2 Alas
+            - 1 Pívot`);
+            return;
+          }
+          const quintetoIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute("data-id"));
+          const jornada = prompt("Ingrese la jornada (número) para el quinteto:");
+          
+          const payload = {
+            liga_id: selectedLeague,
+            jornada: jornada ? parseInt(jornada) : null,
+            quinteto: quintetoIds
+          };
+          
+          try {
+            let response = await fetch(`/api/guardarQuinteto`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify(payload)
+            });
+            let data = await response.json();
+            
+            if (data.exists) {
+              if (confirm("Ya existe un quinteto para esta jornada. ¿Desea actualizarlo?")) {
+                payload.actualizar = true;
+                response = await fetch(`/api/guardarQuinteto`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                  },
+                  body: JSON.stringify(payload)
+                });
+                data = await response.json();
+              }
+            }
+            alert(data.message);
+          } catch (error) {
+            console.error("Error guardando el quinteto:", error);
+            alert("Error al guardar el quinteto.");
+          }
+        }
+  
+        async function cargarQuinteto() {
+          const usuario_id = obtenerUsuarioID();
+          const jornada = document.getElementById("quinteto-jornada-selector").value;
+          const container = document.getElementById("quinteto-cards");
+          const totalPuntosSpan = document.getElementById("total-quinteto-puntos");
+
+          if (!usuario_id || !selectedLeague || !jornada) {
+            alert("Debe seleccionar una jornada.");
+            return;
+          }
+
+          try {
+            const response = await fetch(`/api/quintetos?usuario_id=${usuario_id}&liga_id=${selectedLeague}&jornada=${jornada}`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await response.json();
+            container.innerHTML = "";
+            let total = 0;
+
+            if (data.quinteto && data.quinteto.length > 0) {
+              const ordenPosiciones = { "Portero": 1, "Cierre": 2, "Ala": 3, "Pívot": 4 };
+              data.quinteto.sort((a, b) => ordenPosiciones[a.posicion] - ordenPosiciones[b.posicion]);
+
+              data.quinteto.forEach(jugador => {
+                const card = document.createElement("div");
+                card.className = "quinteto-card";
+                console.log(jugador);
+                card.innerHTML = `
+                  <img src="${jugador.imagen}" alt="Imagen de ${jugador.jugador}">
+                  <div class="jugador-nombre">${jugador.jugador}</div>
+                  <div class="jugador-posicion">${jugador.posicion}</div>
+                  <div class="jugador-puntos">Puntos: ${jugador.puntos || 0}</div>
+                `;
+                container.appendChild(card);
+                total += parseInt(jugador.puntos) || 0;
+              });
+              totalPuntosSpan.textContent = total;
+            } else {
+              container.innerHTML = "<p>No se encontró quinteto para esta jornada.</p>";
+              totalPuntosSpan.textContent = 0;
+            }
+          } catch (error) {
+            console.error("Error cargando el quinteto:", error);
+            alert("Error al cargar el quinteto.");
+          }
+        }
+
+        async function loadPresupuesto() {
+            try {
+              const response = await fetch(`/api/presupuesto/${selectedLeague}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const data = await response.json();
+              console.log("Respuesta completa de presupuesto:", data);
+              if (data.presupuesto !== undefined) {
+                const presupuesto = parseFloat(data.presupuesto);
+                document.getElementById("presupuestoValor").textContent = presupuesto.toFixed(2);
+              } else {
+                document.getElementById("presupuestoValor").textContent = "No disponible";
+              }
+            } catch (error) {
+              console.error("Error cargando presupuesto:", error);
+            }
+          }
+
+  
+        
+        loadTeam();
+        cargarOpcionesJornadas();
+        loadPresupuesto();
+  
+        document.getElementById("saveQuintetoBtn").addEventListener("click", saveQuinteto);
+        document.getElementById("ver-quinteto-btn").addEventListener("click", cargarQuinteto);
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("selectedLeague");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "/index.html";
+        });
+      });
+    </script>
+  </body>
+</html>

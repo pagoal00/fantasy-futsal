@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Gestionar Liga</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="gestionarLiga.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+      <h1>Gestión de la Liga</h1>
+      <div id="contenido">
+        
+        <section id="usuariosLiga" style="display: none;">
+          <h2>Usuarios de la liga</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaUsuarios"></tbody>
+          </table>
+        </section>
+  
+        <section id="editarLiga" style="display: none;">
+          <h2>Modificar nombre o contraseña de la liga</h2>
+          <form id="formEditarLiga">
+            <label for="nuevoNombreLiga">Nuevo nombre de la liga:</label>
+            <input type="text" id="nuevoNombreLiga" />
+  
+            <label for="nuevaPasswordLiga">Nueva contraseña:</label>
+            <input type="password" id="nuevaPasswordLiga" />
+  
+            <button type="submit">Actualizar datos</button>
+          </form>
+        </section>
+  
+        <div id="mensaje" style="color: red;"></div>
+    
+      </div>
+
+      <script>
+        const token = localStorage.getItem("token");
+        const liga_id = localStorage.getItem("selectedLeague");
+
+        document.addEventListener("DOMContentLoaded", () => {
+          if (!token) {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            window.location.href = "/index.html";
+          } else {
+            setTimeout(() => {
+              alert(
+                "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+              );
+              localStorage.removeItem("token");
+              window.location.href = "/index.html";
+            }, 10 * 60 * 1000);
+          }
+        });
+        
+       
+        async function cargarUsuariosLiga() {
+          try {
+            const res = await fetch(`/api/ligas/${liga_id}/usuarios`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (res.status === 403) {
+              document.getElementById("mensaje").textContent = "No tienes permisos para gestionar esta liga.";
+              return;
+            }
+
+            document.getElementById("usuariosLiga").style.display = "block";
+            document.getElementById("editarLiga").style.display = "block";
+
+            const tbody = document.getElementById("tablaUsuarios");
+            data.forEach(user => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                  <td>${user.username}</td>
+                  <td>${user.email}</td>
+                  <td>${user.es_creador ? 'Creador' : `<button onclick="expulsar(${user.id})">Expulsar</button>`}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+          } catch (error) {
+            console.error("Error al cargar usuarios:", error);
+            document.getElementById("mensaje").textContent = "No se pudo cargar la información.";
+          }
+        }
+
+
+        async function expulsar(userId) {
+          if (!confirm("¿Estás seguro de expulsar a este usuario de la liga?")) return;
+
+          try {
+            const response = await fetch(`/api/ligas/${liga_id}/expulsar`, {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${token}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ userId })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            if (response.ok) location.reload();
+          } catch (err) {
+            alert("Error al expulsar usuario.");
+          }
+        }
+
+
+        document.getElementById("formEditarLiga").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const nuevoNombre = document.getElementById("nuevoNombreLiga").value;
+          const nuevaPassword = document.getElementById("nuevaPasswordLiga").value;
+
+          const res = await fetch(`/api/ligas/${liga_id}/editar`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ nuevoNombre, nuevaPassword })
+          });
+
+          const data = await res.json();
+          alert(data.message);
+        });
+
+        cargarUsuariosLiga();
+
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          alert("Has cerrado sesión. Serás redirigido al inicio.");
+          window.location.href = "index.html";
+        });
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

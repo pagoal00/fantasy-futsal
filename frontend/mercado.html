@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Futsal - Mercado</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="mercado.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-...tu_hash..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="navbar">
+          <li class="logo">
+            <a href="inicio.html">
+              <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            </a>
+          </li>
+          <li><a href="inicio.html">Inicio</a></li>
+          <li><a href="mercado.html">Mercado</a></li>
+          <li><a href="equipo.html">Equipo</a></li>
+          <li><a href="clasificacion.html">Clasificación</a></li>
+          <li><a href="mas.html">Más</a></li>
+          <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <div class="container-mercado">
+        <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+        <h1>Mercado de Jugadores</h1>
+        <i class="fas fa-exchange-alt"></i>
+
+        <div id="presupuestoContainer">
+          <p>Presupuesto: <span id="presupuestoValor"></span>M €</p>
+        </div>
+        
+        <div class="table-container-mercado">
+          <table id="mercadoTable">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Jugador</th>
+                <th>Posición</th>
+                <th>Equipo</th>
+                <th>Equipo Vendedor</th>
+                <th>Precio</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            alert(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+            window.location.href = "/index.html";
+          } else {
+            setTimeout(() => {
+              alert(
+                "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+              );
+              localStorage.removeItem("token");
+              window.location.href = "/index.html";
+            }, 10 * 60 * 1000);
+          }
+
+          
+          const selectedLeague = localStorage.getItem("selectedLeague");
+          if (!selectedLeague) {
+            alert("Por favor, selecciona una liga desde la página de inicio.");
+            window.location.href = "/inicio.html";
+            return;
+          }
+          
+          async function loadMarket() {
+            try {
+              const response = await fetch(`/api/mercado/${selectedLeague}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const marketPlayers = await response.json();
+              const tableBody = document.querySelector("#mercadoTable tbody");
+              tableBody.innerHTML = "";
+              
+              marketPlayers.forEach(offer => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                  <td><img src="${offer.imagen}" alt="Imagen de ${offer.jugador_nombre}" style="width:100px; height:auto;"></td>
+                  <td>${offer.jugador_nombre}</td>
+                  <td>${offer.posicion}</td>
+                  <td>${offer.equipo}</td>
+                  <td>${offer.equipo_vendedor}</td>
+                  <td>${offer.precio}</td>
+                  <td><button onclick="buyPlayer(${offer.id}, ${offer.precio})">Fichar</button></td>
+                `;
+                tableBody.appendChild(row);
+              });
+            } catch (error) {
+              console.error("Error cargando el mercado:", error);
+            }
+          }
+          
+          window.buyPlayer = async function(offerId, precio) {
+            try {
+              const response = await fetch("/api/mercado/comprar", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ offerId, precio, liga_id: selectedLeague })
+              });
+              const data = await response.json();
+              alert(data.message);
+              if (response.ok) {
+                loadMarket();
+                loadPresupuesto();
+              }
+            } catch (error) {
+              console.error("Error al comprar jugador:", error);
+            }
+          }
+
+          async function loadPresupuesto() {
+            try {
+              const response = await fetch(`/api/presupuesto/${selectedLeague}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+              const data = await response.json();
+              if (data.presupuesto !== undefined) {
+                const presupuesto = parseFloat(data.presupuesto);
+                document.getElementById("presupuestoValor").textContent = presupuesto.toFixed(2);
+              } else {
+                document.getElementById("presupuestoValor").textContent = "No disponible";
+              }
+            } catch (error) {
+              console.error("Error cargando presupuesto:", error);
+            }
+          }
+
+          loadMarket();
+          loadPresupuesto();
+
+          document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            alert("Has cerrado sesión. Serás redirigido al inicio.");
+            window.location.href = "index.html";
+          });
+        });
+
+        
+      </script>
+    </main>
+    <footer>
+      <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

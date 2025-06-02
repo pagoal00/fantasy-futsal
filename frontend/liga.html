@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Fantasy Futsal - Unirse/Crear Liga</title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" href="liga.css" />
+        <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-...tu_hash..."
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+        />
+    </head>
+    <body>
+        <header>
+            <nav>
+            <ul class="navbar">
+                <li class="logo">
+                <a href="inicio.html">
+                    <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+                </a>
+                </li>
+                <li><a href="inicio.html">Inicio</a></li>
+                <li><a href="mercado.html">Mercado</a></li>
+                <li><a href="equipo.html">Equipo</a></li>
+                <li><a href="clasificacion.html">Clasificación</a></li>
+                <li><a href="mas.html">Más</a></li>
+                <li class="logout"><a href="#" id="logoutBtn" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></a></li>
+            </ul>
+            </nav>
+        </header>
+        <main>
+            <img src="images/LogoFantasyFutsal.png" alt="Fantasy Futsal" />
+            <div class="formularios-container">
+                <form id="createLeagueForm">
+                    <h2>Crear una Liga</h2>
+                    <label for="createLeagueName">Nombre de la Liga:</label>
+                    <input type="text" id="createLeagueName" required>
+                    
+                    <label for="createLeaguePassword">Contraseña:</label>
+                    <input type="password" id="createLeaguePassword" required>
+
+                    <label for="createTeamName">Nombre de tu Equipo:</label>
+                    <input type="text" id="createTeamName" required>
+                    
+                    <button type="submit">Crear Liga</button>
+                </form>
+                
+                <form id="joinLeagueForm">
+                    <h2>Unirse a una Liga</h2>
+                    <label for="joinLeagueName">Nombre de la Liga:</label>
+                    <input type="text" id="joinLeagueName" required>
+                    
+                    <label for="joinLeaguePassword">Contraseña:</label>
+                    <input type="password" id="joinLeaguePassword" required>
+
+                    <label for="joinTeamName">Nombre de tu Equipo:</label>
+                    <input type="text" id="joinTeamName" required>
+                    
+                    <button type="submit">Unirse</button>
+                </form>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    const token = localStorage.getItem("token");
+                    if (!token) {
+                        alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+                        window.location.href = "/index.html";
+                    } else {
+                        setTimeout(() => {
+                            alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+                            localStorage.removeItem("token");
+                            window.location.href = "/index.html";
+                        }, 10 * 60 * 1000);
+                    }
+
+                    const createForm = document.getElementById("createLeagueForm");
+                    const joinForm = document.getElementById("joinLeagueForm");
+
+                    
+                    function getUserIdFromToken(token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split(".")[1]));
+                            return payload.id;
+                        } catch (error) {
+                            console.error("Error al decodificar el token:", error);
+                            return null;
+                        }
+                    }
+
+                    createForm.addEventListener("submit", async (event) => {
+                        event.preventDefault();
+                        
+                        const leagueName = document.getElementById("createLeagueName").value;
+                        const leaguePassword = document.getElementById("createLeaguePassword").value;
+                        const teamName = document.getElementById("createTeamName").value;
+                        const creador_id = getUserIdFromToken(token);
+
+                        if (!creador_id) {
+                            alert("Error: No se pudo identificar al usuario. Inicia sesión nuevamente.");
+                            return;
+                        }
+
+                        const response = await fetch("/api/crearLiga", {
+                            method: "POST",
+                            headers: { 
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}` 
+                            },
+                            body: JSON.stringify({ name: leagueName, password: leaguePassword, creador_id, teamName })
+                        });
+
+                        const data = await response.json();
+                        alert(data.message);
+                        if (response.ok) {
+                            createForm.reset();
+                            window.location.href = "inicio.html";
+                        }
+                    });
+
+
+                    joinForm.addEventListener("submit", async (event) => {
+                        event.preventDefault();
+                        
+                        const leagueName = document.getElementById("joinLeagueName").value;
+                        const leaguePassword = document.getElementById("joinLeaguePassword").value;
+                        const teamName = document.getElementById("joinTeamName").value;
+
+                        const response = await fetch("/api/unirseLiga", {
+                            method: "POST",
+                            headers: { 
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}` 
+                            },
+                            body: JSON.stringify({ name: leagueName, password: leaguePassword, teamName })
+                        });
+
+                        const data = await response.json();
+                        alert(data.message);
+                        if (response.ok) {
+                            joinForm.reset();
+                            window.location.href = "inicio.html";
+                        }
+                    });
+
+                });
+                
+            </script>
+        </main>
+        <footer>
+            <p>&copy; 2025 Fantasy Futsal. Todos los derechos reservados.</p>
+        </footer>
+    </body>
+</html>
